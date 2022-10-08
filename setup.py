@@ -5,6 +5,7 @@ import Tkinter
 import cStringIO
 import random
 import config as cfg
+import greedyMouse
 
 
 class Cell:
@@ -44,7 +45,7 @@ class Agent:
     def go_direction(self, dir):
         target = self.cell.neighbors[dir]
         if getattr(target, 'wall', False):
-            print "hit a wall"
+            # print "hit a wall"
             return False
         self.cell = target
         return True
@@ -139,10 +140,10 @@ class World:
             for a in self.agents:
                 old_cell = a.cell
                 a.update()
-                if old_cell != a.cell:  # old cell won't disappear when new cell
-                    self.display.redraw_cell(old_cell.x, old_cell.y)
+                # if old_cell != a.cell:  # old cell won't disappear when new cell
+                #     self.display.redraw_cell(old_cell.x, old_cell.y)
 
-                self.display.redraw_cell(a.cell.x, a.cell.y)
+                # self.display.redraw_cell(a.cell.x, a.cell.y)
 
         if mouse_win:
             self.mouseWin = mouse_win
@@ -241,8 +242,8 @@ class TkinterDisplay:
             return
         self.set_title(self.title)
         self.imageLabel.update()
-        if self.speed > 0:
-            time.sleep(float(1)/self.speed)
+        # if self.speed > 0:
+        #     time.sleep(float(1)/self.speed)
 
     def make_title(self, world):
         text = 'age: %d' % world.age
@@ -257,6 +258,8 @@ class TkinterDisplay:
             extra.append('skip=%d' % world.display.updateEvery)
         if world.display.speed > 0:
             extra.append('speed=%dm/s' % world.display.speed)
+        # if isinstance(world.agents[0], greedyMouse.Mouse):
+        extra.append('algorithm=%s' % world.agents[0].algorithm)
 
         if len(extra) > 0:
             text += ' [%s]' % ', '.join(extra)

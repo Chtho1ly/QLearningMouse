@@ -7,10 +7,12 @@ wall_color = '#D3CAB4'
 cat_color = '#000000'
 mouse_color = '#06B1C8'
 cheese_color = '#DAA72A'
-speed = 1000
-cheese_exist_time = 500
+speed = 10
+cheese_exist_time = 50
 # animal speed is 10m/s, the max value supposed to be less than 1000.
 
+# Test Settings
+test_time = 10
 
 # -----Learning Parameters---
 alpha = 0.1    # learning rate

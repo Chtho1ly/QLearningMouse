@@ -42,7 +42,7 @@ class Cat(setup.Agent):
                 t = 1 if (line[x] == 'X') else 0
                 self.grid_list[y][x] = t
 
-        print 'cat init success......'
+        # print 'cat init success......'
 
     # using BFS algorithm to move quickly to target.
     def bfs_move(self, target):
@@ -64,7 +64,7 @@ class Cat(setup.Agent):
         preV = {}
         V[(start[0], start[1])] = 1
 
-        print 'begin BFS......'
+        # print 'begin BFS......'
         while not q.empty():
             grid = q.get()
 
@@ -86,7 +86,7 @@ class Cat(setup.Agent):
                         assert len(k) == 1
                         last = preV[(k[0][0], k[0][1])]
                     seq.reverse()
-                    print seq
+                    # print seq
 
                     best_move = world.grid[seq[0][0]][seq[0][1]]
 
@@ -100,7 +100,7 @@ class Cat(setup.Agent):
         else:
             dir = random.randrange(cfg.directions)
             self.go_direction(dir)
-            print "!!!!!!!!!!!!!!!!!!"
+            # print "!!!!!!!!!!!!!!!!!!"
 
     def get_value(self, mdict, key):
         try:
@@ -109,36 +109,48 @@ class Cat(setup.Agent):
             return 0
 
     def update(self):
-        print 'cat update begin..'
+        # print 'cat update begin..'
         if self.cell != mouse.cell:
             self.bfs_move(mouse.cell)
-            print 'cat move..'
+            # print 'cat move..'
 
 
 class Cheese(setup.Agent):
     def __init__(self):
         self.color = cfg.cheese_color
         self.exist_time = 0
+        self.refresh = False
 
     def update(self):
         self.exist_time += 1
         if self.exist_time >= cfg.cheese_exist_time:
             self.exist_time = 0
+            self.refresh = True
             self.cell = pick_random_location()
-        print 'cheese update...'
+        # print 'cheese update...'
         pass
 
 
 class Mouse(setup.Agent):
-    def __init__(self, filename):
-        print 'mouse init...'
-        self.ai = None
-        self.ai = RL.SARSA(actions=xrange(cfg.directions), alpha=0.1, gamma=0.9, epsilon=0.1)
+    def __init__(self, algorithm='qlearning', filename=cfg.graphic_file):
+        # normal init
         self.catWin = 0
         self.mouseWin = 0
+        self.color = cfg.mouse_color
+        self.survive_time = 0
+        self.total_reward = 0
+
+        # init for RL
+        self.ai = None
+        self.algorithm = algorithm
+        if algorithm == 'qlearning':
+            self.ai = RL.QLearn(actions=xrange(cfg.directions), alpha=0.1, gamma=0.9, epsilon=0.1)
+        elif algorithm == 'sarsa':
+            self.ai = RL.SARSA(actions=xrange(cfg.directions), alpha=0.1, gamma=0.9, epsilon=0.1)
         self.lastState = None
         self.lastAction = None
-        self.color = cfg.mouse_color
+
+        # init for greedy
         f = file(filename)
         lines = f.readlines()
         lines = [x.rstrip() for x in lines]
@@ -147,12 +159,13 @@ class Mouse(setup.Agent):
         self.grid_list = [[1 for x in xrange(self.fw)] for y in xrange(self.fh)]
         self.move = [(0, -1), (1, -1), (
             1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)]
-
         for y in xrange(self.fh):
             line = lines[y]
             for x in xrange(min(self.fw, len(line))):
                 t = 1 if (line[x] == 'X') else 0
                 self.grid_list[y][x] = t
+
+        # print 'mouse init...'
 
     def get_value(self, mdict, key):
         try:
@@ -161,22 +174,52 @@ class Mouse(setup.Agent):
             return 0
 
     def update(self):
-        print 'mouse update begin...'
+        # print 'mouse update begin...'
+        self.survive_time += 1
+        if self.algorithm != 'greedy':
+            state = self.calculate_state()
+            reward = cfg.MOVE_REWARD
 
-        if self.cell == cat.cell:
-            print 'eaten by cat...'
-            self.catWin += 1
-            self.lastState = None
-            self.cell = pick_random_location()
-            print 'mouse random generate..'
-            return
+            if self.cell == cat.cell:
+                # print 'eaten by cat...'
+                self.catWin += 1
+                reward = cfg.EATEN_BY_CAT
+                self.lastState = None
+                self.cell = pick_random_location()
+                # print 'mouse random generate..'
+                self.total_reward += reward
+                return
 
-        if self.cell == cheese.cell:
-            self.mouseWin += 1
-            cheese.cell = pick_random_location()
+            if self.cell == cheese.cell:
+                self.mouseWin += 1
+                reward = 50
+                cheese.cell = pick_random_location()
 
-        # choose a new action and execute it
-        self.bfs_move(cheese.cell)
+            # choose a new action and execute it
+            action = self.ai.choose_action(state)
+            self.lastState = state
+            self.lastAction = action
+            self.go_direction(action)
+            self.total_reward += reward
+        else:
+            reward = cfg.MOVE_REWARD
+            if self.cell == cat.cell:
+                # print 'eaten by cat...'
+                self.catWin += 1
+                reward = cfg.EATEN_BY_CAT
+                self.lastState = None
+                self.cell = pick_random_location()
+                # print 'mouse random generate..'
+                return
+
+            if self.cell == cheese.cell:
+                self.mouseWin += 1
+                reward = cfg.EAT_CHEESE
+                cheese.cell = pick_random_location()
+
+            # choose a new action and execute it
+            self.bfs_move(cheese.cell)
+            self.total_reward += reward
 
     # using BFS algorithm to move quickly to target.
     def bfs_move(self, target):
@@ -198,7 +241,7 @@ class Mouse(setup.Agent):
         preV = {}
         V[(start[0], start[1])] = 1
 
-        print 'begin BFS......'
+        # print 'begin BFS......'
         while not q.empty():
             grid = q.get()
 
@@ -220,7 +263,7 @@ class Mouse(setup.Agent):
                         assert len(k) == 1
                         last = preV[(k[0][0], k[0][1])]
                     seq.reverse()
-                    print seq
+                    # print seq
 
                     best_move = world.grid[seq[0][0]][seq[0][1]]
 
@@ -234,27 +277,66 @@ class Mouse(setup.Agent):
         else:
             dir = random.randrange(cfg.directions)
             self.go_direction(dir)
-            print "!!!!!!!!!!!!!!!!!!"
+            # print "!!!!!!!!!!!!!!!!!!"
+
+    def calculate_state(self):
+        def cell_value(cell):
+            if cat.cell is not None and (cell.x == cat.cell.x and cell.y == cat.cell.y):
+                return 3
+            elif cheese.cell is not None and (cell.x == cheese.cell.x and cell.y == cheese.cell.y):
+                return 2
+            else:
+                return 1 if cell.wall else 0
+
+        dirs = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+        cheese_dis = [cheese.cell.x - mouse.cell.x, cheese.cell.y - mouse.cell.y]
+        cheese_dir = 0
+        if abs(cheese_dis[0]) > abs(cheese_dis[1]):
+            if cheese_dis[0] > 0:
+                cheese_dir = 1
+            else:
+                cheese_dir = 2
+        else:
+            if cheese_dis[1] > 0:
+                cheese_dir = 3
+            else:
+                cheese_dir = 4
+
+        state = tuple([cell_value(world.get_relative_cell(self.cell.x + dir[0], self.cell.y + dir[1])) for dir in
+                       dirs]) + tuple([cheese_dir])
+        # print state
+        return state
+
+
 if __name__ == '__main__':
-    mouse = Mouse(filename=cfg.graphic_file)
-    # if len(sys.argv) > 1:
-    #     mouse.ai = pickle.load(open(sys.argv[1], 'rb'))
-    print (mouse.ai.q)
-    cat = Cat(filename=cfg.graphic_file)
-    cheese = Cheese()
-    world = setup.World(filename=cfg.graphic_file)
+    algorithm_names = ['greedy', 'sarsa', 'qlearning']
+    train_times = range(10000, 500000 + 1, 10000)
 
-    world.add_agent(mouse)
-    world.add_agent(cheese, cell=pick_random_location())
-    world.add_agent(cat, cell=pick_random_location())
+    for train_time in train_times:
+        for algorithm_name in algorithm_names:
+            save_file = 'saves/' + algorithm_name + '_' + str(train_time)
+            total_reward = 0
+            total_survive = 0
+            for i in range(cfg.test_time):
+                mouse = Mouse(algorithm=algorithm_name)
+                if algorithm_name in ['sarsa', 'qlearning']:
+                    mouse.ai = pickle.load(open(save_file, 'rb'))
+                cat = Cat(filename=cfg.graphic_file)
+                cheese = Cheese()
+                world = setup.World(filename=cfg.graphic_file)
 
-    world.display.activate()
-    world.display.speed = cfg.speed
+                world.add_agent(mouse)
+                world.add_agent(cheese, cell=pick_random_location())
+                world.add_agent(cat, cell=pick_random_location())
 
-    loop = 1
-    while 1:
-        world.update(mouse.mouseWin, mouse.catWin)
-        loop += 1
-        if loop % 10000 == 0:
-            with open("saves/save_" + cfg.graphic_file.split('/')[1].split('.')[0] + '_' + str(loop), 'wb') as f:
-                pickle.dump(mouse.ai, f)
+                world.display.activate()
+                world.display.speed = cfg.speed
+
+                while not (mouse.mouseWin or mouse.catWin or cheese.refresh):
+                    world.update(mouse.mouseWin, mouse.catWin)
+
+                world.display.quit()
+                total_reward += mouse.total_reward
+                total_survive += mouse.survive_time
+
+            print('%12s%8d%8.2f%8.2f' % (algorithm_name, train_time, total_reward / float(cfg.test_time), total_survive / float(cfg.test_time)))
