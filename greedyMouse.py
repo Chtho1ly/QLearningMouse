@@ -4,7 +4,11 @@ import random
 import setup
 import qlearn
 import config as cfg
+import pickle
+import sys
+import getopt
 from Queue import Queue
+
 reload(setup)
 reload(qlearn)
 
@@ -30,7 +34,7 @@ class Cat(setup.Agent):
         self.fw = max([len(x) for x in lines])
         self.grid_list = [[1 for x in xrange(self.fw)] for y in xrange(self.fh)]
         self.move = [(0, -1), (1, -1), (
-                1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)]
+            1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)]
 
         for y in xrange(self.fh):
             line = lines[y]
@@ -66,7 +70,7 @@ class Cat(setup.Agent):
 
             for i in xrange(8):
                 ny, nx = grid[0] + self.move[i][0], grid[1] + self.move[i][1]
-                if nx < 0 or ny < 0 or nx > (self.fw-1) or ny > (self.fh-1):
+                if nx < 0 or ny < 0 or nx > (self.fw - 1) or ny > (self.fh - 1):
                     continue
                 if self.get_value(V, (ny, nx)) or self.grid_list[ny][nx] == 1:  # has visit or is wall.
                     continue
@@ -114,8 +118,13 @@ class Cat(setup.Agent):
 class Cheese(setup.Agent):
     def __init__(self):
         self.color = cfg.cheese_color
+        self.exist_time = 0
 
     def update(self):
+        self.exist_time += 1
+        if self.exist_time >= cfg.cheese_exist_time:
+            self.exist_time = 0
+            self.cell = pick_random_location()
         print 'cheese update...'
         pass
 
@@ -173,20 +182,45 @@ class Mouse(setup.Agent):
                 return 1 if cell.wall else 0
 
         dirs = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
-        return tuple([cell_value(world.get_relative_cell(self.cell.x + dir[0], self.cell.y + dir[1])) for dir in dirs])
+        cheese_dis = [cheese.cell.x - mouse.cell.x, cheese.cell.y - mouse.cell.y]
+        cheese_dir = 0
+        if abs(cheese_dis[0]) > abs(cheese_dis[1]):
+            if cheese_dis[0] > 0:
+                cheese_dir = 1
+            else:
+                cheese_dir = 2
+        else:
+            if cheese_dis[1] > 0:
+                cheese_dir = 3
+            else:
+                cheese_dir = 4
+
+        state = tuple([cell_value(world.get_relative_cell(self.cell.x + dir[0], self.cell.y + dir[1])) for dir in
+                       dirs]) + tuple([cheese_dir])
+        # print state
+        return state
+
 
 if __name__ == '__main__':
     mouse = Mouse()
-    cat = Cat(filename='resources/world.txt')
+    if len(sys.argv) > 1:
+        mouse.ai = pickle.load(open(sys.argv[1], 'rb'))
+    print (mouse.ai.q)
+    cat = Cat(filename=cfg.graphic_file)
     cheese = Cheese()
-    world = setup.World(filename='resources/world.txt')
+    world = setup.World(filename=cfg.graphic_file)
 
     world.add_agent(mouse)
     world.add_agent(cheese, cell=pick_random_location())
-    world.add_agent(cat, cell=pick_random_location())
+    # world.add_agent(cat, cell=pick_random_location())
 
     world.display.activate()
     world.display.speed = cfg.speed
 
+    loop = 1
     while 1:
         world.update(mouse.mouseWin, mouse.catWin)
+        loop += 1
+        if loop % 10000 == 0:
+            with open("saves/save_" + cfg.graphic_file.split('/')[1].split('.')[0] + '_' + str(loop), 'wb') as f:
+                pickle.dump(mouse.ai, f)

@@ -13,12 +13,14 @@ class QLearn:
         * gamma is the value of the future reward.
     It use the best next choice of utility in later state to update the former state.
     """
+
     def __init__(self, actions, alpha=cfg.alpha, gamma=cfg.gamma, epsilon=cfg.epsilon):
         self.q = {}
         self.alpha = alpha
         self.gamma = gamma
         self.actions = actions  # collection of choices
         self.epsilon = epsilon  # exploration constant
+        self.loop_time = 1
 
     # Get the utility of an action in certain state, default is 0.0.
     def get_utility(self, state, action):
@@ -26,7 +28,7 @@ class QLearn:
 
     # When in certain state, find the best action while explore new grid by chance.
     def choose_action(self, state):
-        if random.random < self.epsilon:
+        if random.random < self.epsilon * 10 / self.loop_time:
             action = random.choice(self.actions)
         else:
             q = [self.get_utility(state, act) for act in self.actions]
@@ -50,3 +52,5 @@ class QLearn:
         else:
             next_max_utility = max([self.get_utility(state2, a) for a in self.actions])
             self.q[(state1, action)] = old_utility + self.alpha * (reward + self.gamma * next_max_utility - old_utility)
+
+        self.loop_time += 1
