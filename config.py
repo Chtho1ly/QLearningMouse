@@ -1,7 +1,7 @@
 # coding:utf-8
 
 # -----World Setting------
-graphic_file = 'resources/world_21.txt'
+graphic_file = 'resources/world.txt'
 grid_width = 50   # pixels of a single grid
 wall_color = '#D3CAB4'
 cat_color = '#000000'

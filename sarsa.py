@@ -4,10 +4,11 @@ import random
 import config as cfg
 
 
-class QLearn:
+class SARSA:
     """
-    Q-learning:
-        Q(s, a) += alpha * (reward(s,a) + gamma * max(Q(s', a') - Q(s,a))
+    SARSA:
+        Choose a' from s' using policy derived from Q (e.g. epsilon-greedy)
+        Q(s, a) += alpha * (reward(s,a) + gamma * Q(s', a') - Q(s,a))
 
         * alpha is the learning rate.
         * gamma is the value of the future reward.
@@ -50,7 +51,8 @@ class QLearn:
 
         # update utility
         else:
-            next_max_utility = max([self.get_utility(state2, a) for a in self.actions])
-            self.q[(state1, action)] = old_utility + self.alpha * (reward + self.gamma * next_max_utility - old_utility)
+            next_action = self.choose_action(state2)
+            next_utility = self.get_utility(state2, next_action)
+            self.q[(state1, action)] = old_utility + self.alpha * (reward + self.gamma * next_utility - old_utility)
 
         self.loop_time += 1

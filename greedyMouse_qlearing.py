@@ -2,7 +2,7 @@
 
 import random
 import setup
-import qlearn
+import RL
 import config as cfg
 import pickle
 import sys
@@ -10,7 +10,7 @@ import getopt
 from Queue import Queue
 
 reload(setup)
-reload(qlearn)
+reload(RL)
 
 
 def pick_random_location():
@@ -132,7 +132,7 @@ class Cheese(setup.Agent):
 class Mouse(setup.Agent):
     def __init__(self):
         self.ai = None
-        self.ai = qlearn.QLearn(actions=xrange(cfg.directions), alpha=0.1, gamma=0.9, epsilon=0.1)
+        self.ai = RL.QLearn(actions=xrange(cfg.directions), alpha=0.1, gamma=0.9, epsilon=0.1)
         self.catWin = 0
         self.mouseWin = 0
         self.lastState = None
