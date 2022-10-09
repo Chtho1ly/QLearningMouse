@@ -309,36 +309,47 @@ class Mouse(setup.Agent):
 
 
 if __name__ == '__main__':
-    # algorithm_names = ['greedy', 'sarsa', 'qlearning']
-    algorithm_names = ['qlearning']
-    step = 40000
-    train_times = range(step, 1000000 + 1, step)
+    algorithm_names = ['greedy', 'sarsa', 'qlearning']
+    # algorithm_names = ['qlearning']
+    step = 8000
+    train_times = range(step, 800000 + 1, step)
 
-    for train_time in train_times:
+    result_file_path = 'csv/result.csv'
+    with open(result_file_path, 'w') as result_file:
+        # table head
+        result_file.write(',')
         for algorithm_name in algorithm_names:
-            save_file = 'saves/' + algorithm_name + '_' + str(train_time)
-            total_reward = 0
-            total_survive = 0
-            for i in range(cfg.test_time):
-                mouse = Mouse(algorithm=algorithm_name)
-                if algorithm_name in ['sarsa', 'qlearning']:
-                    mouse.ai = pickle.load(open(save_file, 'rb'))
-                cat = Cat(filename=cfg.graphic_file)
-                cheese = Cheese()
-                world = setup.World(filename=cfg.graphic_file)
+            result_file.write('%s_reward,' % algorithm_name)
+            result_file.write('%s_survive,' % algorithm_name)
+            result_file.write('%s_win,' % algorithm_name)
+        result_file.write('\n')
 
-                world.add_agent(mouse)
-                world.add_agent(cheese, cell=pick_random_location())
-                world.add_agent(cat, cell=pick_random_location())
+        for train_time in train_times:
+            for algorithm_name in algorithm_names:
+                save_file = 'saves/' + algorithm_name + '_' + str(train_time)
+                total_reward = 0
+                total_survive = 0
+                for i in range(cfg.test_time):
+                    mouse = Mouse(algorithm=algorithm_name)
+                    if algorithm_name in ['sarsa', 'qlearning']:
+                        mouse.ai = pickle.load(open(save_file, 'rb'))
+                    cat = Cat(filename=cfg.graphic_file)
+                    cheese = Cheese()
+                    world = setup.World(filename=cfg.graphic_file)
 
-                world.display.activate()
-                world.display.speed = cfg.speed
+                    world.add_agent(mouse)
+                    world.add_agent(cheese, cell=pick_random_location())
+                    world.add_agent(cat, cell=pick_random_location())
 
-                while not (mouse.mouseWin or mouse.catWin or cheese.refresh):
-                    world.update(mouse.mouseWin, mouse.catWin)
+                    # world.display.activate()
+                    # world.display.speed = cfg.speed
 
-                world.display.quit()
-                total_reward += mouse.total_reward
-                total_survive += mouse.survive_time
+                    while not (mouse.mouseWin or mouse.catWin or cheese.refresh):
+                        world.update(mouse.mouseWin, mouse.catWin)
 
-            print('%12s%8d%8.2f%8.2f' % (algorithm_name, train_time, total_reward / float(cfg.test_time), total_survive / float(cfg.test_time)))
+                    # world.display.quit()
+                    total_reward += mouse.total_reward
+                    total_survive += mouse.survive_time
+
+                print('%12s%8d%8.2f%8.2f' % (algorithm_name, train_time, total_reward / float(cfg.test_time), total_survive / float(cfg.test_time)))
+                result_file.write('')
