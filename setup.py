@@ -242,8 +242,8 @@ class TkinterDisplay:
             return
         self.set_title(self.title)
         self.imageLabel.update()
-        # if self.speed > 0:
-        #     time.sleep(float(1)/self.speed)
+        if self.speed > 0:
+            time.sleep(float(1)/self.speed)
 
     def make_title(self, world):
         text = 'age: %d' % world.age
