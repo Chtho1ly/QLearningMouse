@@ -28,7 +28,8 @@ class QLearn:
 
     # When in certain state, find the best action while explore new grid by chance.
     def choose_action(self, state):
-        if random.random < self.epsilon * 10 / self.loop_time:
+        # if random.random < self.epsilon * 10 / self.loop_time:
+        if random.random < self.epsilon:
             action = random.choice(self.actions)
         else:
             q = [self.get_utility(state, act) for act in self.actions]
@@ -80,7 +81,8 @@ class SARSA:
 
     # When in certain state, find the best action while explore new grid by chance.
     def choose_action(self, state):
-        if random.random < self.epsilon * 10 / self.loop_time:
+        # if random.random < self.epsilon * 10 / self.loop_time:
+        if random.random < self.epsilon:
             action = random.choice(self.actions)
         else:
             q = [self.get_utility(state, act) for act in self.actions]
