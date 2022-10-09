@@ -140,10 +140,10 @@ class World:
             for a in self.agents:
                 old_cell = a.cell
                 a.update()
-                if old_cell != a.cell:  # old cell won't disappear when new cell
-                    self.display.redraw_cell(old_cell.x, old_cell.y)
+                # if old_cell != a.cell:  # old cell won't disappear when new cell
+                #     self.display.redraw_cell(old_cell.x, old_cell.y)
 
-                self.display.redraw_cell(a.cell.x, a.cell.y)
+                # self.display.redraw_cell(a.cell.x, a.cell.y)
 
         if mouse_win:
             self.mouseWin = mouse_win

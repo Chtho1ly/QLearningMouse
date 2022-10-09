@@ -1,7 +1,7 @@
 # coding:utf-8
 
 import random
-import setup
+import setup_UIless as setup
 import RL
 import config as cfg
 import pickle
@@ -309,8 +309,10 @@ class Mouse(setup.Agent):
 
 
 if __name__ == '__main__':
-    algorithm_names = ['greedy', 'sarsa', 'qlearning']
-    train_times = range(10000, 500000 + 1, 10000)
+    # algorithm_names = ['greedy', 'sarsa', 'qlearning']
+    algorithm_names = ['qlearning']
+    step = 40000
+    train_times = range(step, 1000000 + 1, step)
 
     for train_time in train_times:
         for algorithm_name in algorithm_names:
