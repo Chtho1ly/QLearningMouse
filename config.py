@@ -12,7 +12,7 @@ cheese_exist_time = 50
 # animal speed is 10m/s, the max value supposed to be less than 1000.
 
 # Test Settings
-test_time = 10
+test_time = 100
 
 # -----Learning Parameters---
 alpha = 0.1    # learning rate

@@ -1,0 +1,2 @@
+,greedy_reward,greedy_survive,greedy_mouse,greedy_cat,sarsa_reward,sarsa_survive,sarsa_mouse,sarsa_cat,qlearning_reward,qlearning_survive,qlearning_mouse,qlearning_cat,
+8000,22.48,5.02,0.53,0.47,

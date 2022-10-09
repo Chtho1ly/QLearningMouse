@@ -321,14 +321,18 @@ if __name__ == '__main__':
         for algorithm_name in algorithm_names:
             result_file.write('%s_reward,' % algorithm_name)
             result_file.write('%s_survive,' % algorithm_name)
-            result_file.write('%s_win,' % algorithm_name)
+            result_file.write('%s_mouse,' % algorithm_name)
+            result_file.write('%s_cat,' % algorithm_name)
         result_file.write('\n')
 
         for train_time in train_times:
+            result_file.write('%d,' % train_time)
             for algorithm_name in algorithm_names:
                 save_file = 'saves/' + algorithm_name + '_' + str(train_time)
                 total_reward = 0
                 total_survive = 0
+                total_cat_win = 0
+                total_mouse_win = 0
                 for i in range(cfg.test_time):
                     mouse = Mouse(algorithm=algorithm_name)
                     if algorithm_name in ['sarsa', 'qlearning']:
@@ -350,6 +354,18 @@ if __name__ == '__main__':
                     # world.display.quit()
                     total_reward += mouse.total_reward
                     total_survive += mouse.survive_time
+                    total_mouse_win += mouse.mouseWin
+                    total_cat_win += mouse.catWin
 
-                print('%12s%8d%8.2f%8.2f' % (algorithm_name, train_time, total_reward / float(cfg.test_time), total_survive / float(cfg.test_time)))
-                result_file.write('')
+                print('%12s%8d%8.2f%8.2f%8.2f%8.2f'
+                      % (algorithm_name, train_time,
+                         total_reward / float(cfg.test_time),
+                         total_survive / float(cfg.test_time),
+                         total_mouse_win / float(cfg.test_time),
+                         total_cat_win / float(cfg.test_time)))
+                result_file.write('%.2f,%.2f,%.2f,%.2f,'
+                                  % (total_reward / float(cfg.test_time),
+                                     total_survive / float(cfg.test_time),
+                                     total_mouse_win / float(cfg.test_time),
+                                     total_cat_win / float(cfg.test_time)))
+            result_file.write('\n')
