@@ -297,8 +297,10 @@ class Mouse(setup.Agent):
             else:
                 cheese_dir = 4
 
+        # state = tuple([cell_value(world.get_relative_cell(self.cell.x + dir[0], self.cell.y + dir[1])) for dir in
+        #                dirs]) + tuple([cheese_dir])
         state = tuple([cell_value(world.get_relative_cell(self.cell.x + dir[0], self.cell.y + dir[1])) for dir in
-                       dirs]) + tuple([cheese_dir])
+                       dirs])
         # print state
         return state
 
