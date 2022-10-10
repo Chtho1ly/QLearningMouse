@@ -310,11 +310,16 @@ if __name__ == '__main__':
     # process args
     argv = sys.argv[1:]
     try:
-        opts, args = getopt.getopt(argv, "a:s:")
+        opts, args = getopt.getopt(argv, "a:s:h")
     except:
         print("Error")
     for opt, arg in opts:
-        if opt in ['-a']:
+        if opt in ['-h']:
+            print('-a algorithm -s save_file')
+            print('algorithm = greedy | sarsa | qlearning')
+            print('save_file = save file path')
+            exit(0)
+        elif opt in ['-a']:
             algorithm_name = arg
         elif opt in ['-s']:
             save_file = arg
